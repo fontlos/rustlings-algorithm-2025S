@@ -160,6 +160,28 @@ impl MaxHeap {
     }
 }
 
+/// 获取最小的K个元素
+pub fn top_k_min<T: Ord + Default>(nums: Vec<T>, k: usize) -> Vec<T> {
+    if k == 0 || nums.is_empty() {
+        return vec![];
+    }
+
+    let mut heap = MaxHeap::new(); // 最大堆保留最小的 K 个元素
+
+    for num in nums {
+        if heap.len() < k {
+            heap.add(num);
+        } else {
+            if &num < heap.items.get(1).unwrap() {
+                heap.next(); // 移除当前堆顶
+                heap.add(num);
+            }
+        }
+    }
+
+    heap.collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -197,5 +219,22 @@ mod tests {
         assert_eq!(heap.next(), Some(4));
         heap.add(1);
         assert_eq!(heap.next(), Some(2));
+    }
+
+    #[test]
+    fn test_top_k_min() {
+        let nums = vec![4, 1, 3, 12, 7, 5];
+        // 由于 next 函数的行为会导致结果是反转的
+        assert_eq!(top_k_min(nums.clone(), 3), vec![4, 3, 1]);
+        assert_eq!(top_k_min(nums.clone(), 5), vec![7, 5, 4, 3, 1]);
+        assert_eq!(top_k_min(nums.clone(), 0), vec![]);
+    }
+
+    #[test]
+    fn test_edge_cases() {
+        // 元素全部相同
+        assert_eq!(top_k_min(vec![2, 2, 2], 2), vec![2, 2]);
+        // K 大于数组长度
+        assert_eq!(top_k_min(vec![1, 2], 5), vec![2, 1]);
     }
 }
